@@ -227,6 +227,7 @@ $("start").onclick = () => {
   } else if (mode === "load") {
     sim.load();
     mode = "drive";
+    canvas.focus({ preventScroll: true });
     notice(
       "Hold → / D to drive. Ease off over bumps. Deliver your coconuts to the shredder.",
     );
@@ -290,6 +291,9 @@ $("sound").onclick = () => {
 window.addEventListener("keydown", (e) => {
   if (["INPUT", "SELECT"].includes(e.target.tagName) || $("instructions").open)
     return;
+  // Arrow keys belong to the game, including up/down, which otherwise scroll
+  // the page while the player is driving. Form controls retain native editing.
+  if (e.key.startsWith("Arrow")) e.preventDefault();
   if (["ArrowLeft", "ArrowRight", "a", "d", "A", "D"].includes(e.key)) {
     e.preventDefault();
     keys.add(e.key.toLowerCase());

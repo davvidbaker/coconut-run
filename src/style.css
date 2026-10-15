@@ -318,7 +318,13 @@ canvas {
 .stat strong {
   font: 400 34px "Space Grotesk";
   letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
 }
+.homage { max-width: 620px; margin-top: 8px; font-size: 10px; }
+.homage a { color: #466b4b; }
+#timer { min-width: 5ch; }
+#cargo { min-width: 2ch; }
+#start { min-height: 44px; }
 .stat span {
   font-size: 10px;
   color: #83917a;
