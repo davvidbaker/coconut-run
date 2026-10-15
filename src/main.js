@@ -757,7 +757,7 @@ function frame(now) {
             (w) =>
               groundHeight(terrain, w.position.x) -
                 w.position.y -
-                w.circleRadius >
+                (w.plugin.welded ? w.bounds.max.y-w.position.y : w.circleRadius) >
               14,
           ) && sim.x > 650;
         if (airborne) {
