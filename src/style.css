@@ -1209,3 +1209,41 @@ footer > span:nth-child(2) {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+.section-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 15px;
+  background: #e5eddd;
+  height: 34px;
+  min-height: 34px;
+  font-size: 10px;
+  overflow: hidden;
+}
+.section-status b {
+  white-space: nowrap;
+  color: #335d51;
+  font: 600 11px "Space Grotesk";
+  flex-shrink: 0;
+}
+.section-status span {
+  color: #788979;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
+}
+@media (max-width: 700px) {
+  .section-status {
+    gap: 8px;
+    padding: 0 10px;
+    height: 31px;
+    min-height: 31px;
+  }
+  .section-status b {
+    font-size: 9px;
+  }
+  .section-status span {
+    font-size: 8px;
+  }
+}

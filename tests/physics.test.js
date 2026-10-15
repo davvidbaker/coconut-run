@@ -100,9 +100,23 @@ test("endurance courses exceed the original length and have distinct obstacles",
   assert.ok(courses.lagoon.finish > 14000);
   assert.ok(courses.dunes.finish > 19000);
   assert.ok(courses.orbit.finish > 22000);
+  for (const course of Object.values(courses)) {
+    assert.equal(course.sections.length, 7, course.name);
+    assert.ok(course.features.length >= 4, course.name);
+    assert.ok(
+      course.terrain.every((p, i, a) => !i || p[0] > a[i - 1][0]),
+      course.name,
+    );
+    assert.ok(
+      course.sections.every((s, i, a) => s.hint && (!i || s.x > a[i - 1].x)),
+      course.name,
+    );
+  }
   assert.ok(
-    courses.dunes.terrain.some((p, i, a) => i && p[0] - a[i - 1][0] === 1),
+    courses.lagoon.features.filter((f) => f.type === "bridge").length >= 3,
   );
+  assert.ok(courses.dunes.features.some((f) => f.type === "rollers"));
+  assert.ok(courses.orbit.features.some((f) => f.type === "wind"));
 });
 
 test("video-inspired starters preserve independent articulation and deliver their cargo", () => {

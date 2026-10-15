@@ -1,3 +1,4 @@
+import { drawCourseFeatures } from "./course-visuals.js";
 import { drawMinimap } from "./minimap.js";
 import { garage } from "./garage.js";
 import "./style.css";
@@ -18,13 +19,13 @@ let courseId = "lagoon",
   FINISH = course.finish;
 const recordKey = "coconut-run-records-v" + COURSE_VERSION;
 let autoDrive = false;
+let currentSection = -1;
 let boostHeld = false,
   collected = new Set(),
   airtime = 0,
   airStreak = 0,
   wasAir = false,
   lastDelivered = 0,
-  nextGate = 1500,
   records = {};
 const effects = new Effects();
 try {
@@ -275,7 +276,10 @@ function build() {
   airStreak = 0;
   wasAir = false;
   lastDelivered = 0;
-  nextGate = 1500;
+  currentSection = -1;
+  $("section-name").textContent = course.sections?.[0]?.name || "Workshop";
+  $("section-hint").textContent =
+    course.sections?.[0]?.hint || "Build, load, deliver.";
   effects.clear();
   $("aboard").textContent = "15";
   $("star-count").textContent = "☆ ☆ ☆";
@@ -398,6 +402,9 @@ for (const b of document.querySelectorAll("[data-course]"))
     FINISH = course.finish;
     refreshRecords();
     update();
+    $("section-name").textContent = course.sections?.[0]?.name || "Workshop";
+    $("section-hint").textContent =
+      course.sections?.[0]?.hint || "Build, load, deliver.";
     notice(course.description);
   };
 for (const id of ["boost", "touch-boost"]) {
@@ -616,6 +623,7 @@ function draw() {
   );
   ctx.save();
   ctx.translate(-camera, 0);
+  drawCourseFeatures(ctx, course, sim, performance.now() / 1000, camera);
   for (const [i, star] of course.stars.entries())
     if (!collected.has(i)) {
       circle(star.x, star.y, 27, "#fff0b52a");
@@ -722,7 +730,13 @@ function draw() {
     }
   }
   ctx.restore();
-  drawMinimap(ctx, course, sim?.x ?? 390, camera, Math.min(1.8, Math.max(1, 650 / canvas.clientWidth)));
+  drawMinimap(
+    ctx,
+    course,
+    sim?.x ?? 390,
+    camera,
+    Math.min(1.8, Math.max(1, 650 / canvas.clientWidth)),
+  );
   effects.draw(ctx, camera);
   if (mode === "build") {
     ctx.fillStyle = "#285c5e";
@@ -754,14 +768,7 @@ function frame(now) {
         boostHeld || keys.has("shift"),
       );
       if (mode === "drive") {
-        const airborne =
-          sim.wheels.every(
-            (w) =>
-              groundHeight(terrain, w.position.x) -
-                w.position.y -
-                (w.plugin.welded ? w.bounds.max.y-w.position.y : w.circleRadius) >
-              14,
-          ) && sim.x > 650;
+        const airborne = !sim.grounded && sim.x > 650;
         if (airborne) {
           airtime += 1 / 120;
           airStreak += 1 / 120;
@@ -810,11 +817,21 @@ function frame(now) {
       $("star-count").textContent = [0, 1, 2]
         .map((i) => (collected.has(i) ? "★" : "☆"))
         .join(" ");
-      if (sim.x > nextGate && nextGate < FINISH) {
-        effects.toast("CHECKPOINT · KEEP IT TOGETHER");
-        beep(520);
-        nextGate += 1500;
+      const sectionIndex = (course.sections || []).findLastIndex(
+        (section) => section.x <= sim.x,
+      );
+      if (sectionIndex !== currentSection && sectionIndex >= 0) {
+        currentSection = sectionIndex;
+        const section = course.sections[sectionIndex];
+        $("section-name").textContent =
+          String(sectionIndex + 1).padStart(2, "0") + " / " + section.name;
+        $("section-hint").textContent = section.hint;
+        if (sectionIndex > 0) {
+          effects.toast(section.name.toUpperCase());
+          beep(520);
+        }
       }
+
       if (sim.delivered > lastDelivered) {
         effects.burst(FINISH + 60, 390, "#ffe7a0", 8);
         beep(500 + sim.delivered * 24);
@@ -855,6 +872,9 @@ function frame(now) {
   draw();
   requestAnimationFrame(frame);
 }
+$("section-name").textContent = course.sections?.[0]?.name || "Workshop";
+$("section-hint").textContent =
+  course.sections?.[0]?.hint || "Build, load, deliver.";
 $("preset").value = "train";
 $("garage-tag").textContent = garage.train.tag;
 $("garage-description").textContent = garage.train.description;

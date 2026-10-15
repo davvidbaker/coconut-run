@@ -1,3 +1,4 @@
+import { createCourseFeatures } from "./course-physics.js";
 import { garage } from "./garage.js";
 import Matter from "matter-js";
 const { Bodies, Body, Composite, Constraint, Engine, Query, Vector } = Matter;
@@ -111,6 +112,7 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
     const minX = Math.min(...ground.vertices.map((v) => v.x)),
       minY = Math.min(...ground.vertices.map((v) => v.y));
     Body.translate(ground, { x: x - minX, y: Math.min(y, y2) - minY });
+    ground.plugin = { surface: true };
     Composite.add(engine.world, ground);
   }
   for (const p of parts.filter((p) => !["spring", "hinge"].includes(p.type))) {
@@ -288,6 +290,8 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
       }
     }
   }
+  const courseMechanisms = createCourseFeatures(engine, course);
+  const vehicleRoots = new Set(objects.map((o) => o.body.parent));
   let loaded = false,
     elapsed = 0,
     delivered = 0,
@@ -300,6 +304,18 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
     coconuts,
     joints,
     actuators,
+    features: courseMechanisms.features,
+    get grounded() {
+      return engine.pairs.list.some((pair) => {
+        if (!pair.isActive) return false;
+        const a = pair.bodyA.parent,
+          b = pair.bodyB.parent;
+        return (
+          (vehicleRoots.has(a) && b.plugin.surface) ||
+          (vehicleRoots.has(b) && a.plugin.surface)
+        );
+      });
+    },
     get fuel() {
       return fuel;
     },
@@ -390,6 +406,7 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
             x: drive * body.mass * 0.00018,
             y: 0,
           });
+      courseMechanisms.step(objects, coconuts, loaded);
       Engine.update(engine, dt);
       for (const c of coconuts) {
         if (c.plugin.state !== "live") continue;
