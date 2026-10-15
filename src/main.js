@@ -1,3 +1,4 @@
+import { drawMinimap } from "./minimap.js";
 import { garage } from "./garage.js";
 import "./style.css";
 import Matter from "matter-js";
@@ -721,6 +722,7 @@ function draw() {
     }
   }
   ctx.restore();
+  drawMinimap(ctx, course, sim?.x ?? 390, camera, Math.min(1.8, Math.max(1, 650 / canvas.clientWidth)));
   effects.draw(ctx, camera);
   if (mode === "build") {
     ctx.fillStyle = "#285c5e";
