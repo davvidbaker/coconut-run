@@ -44,3 +44,38 @@ test("design validation and efficiency scoring", () => {
   assert.equal(score(0, 10), 0);
   assert.ok(score(15, 40) < score(15, 20));
 });
+
+import { courses, medal } from "../src/courses.js";
+test("boost consumes fuel, stops on an empty tank and recharges off throttle", () => {
+  const s = createSimulation(preset());
+  s.load();
+  for (let i = 0; i < 120; i++) s.step(1000 / 120, 0, 1, true);
+  assert.equal(s.fuel, 1);
+  for (let i = 0; i < 300; i++) s.step(1000 / 120, 1, 1, true);
+  assert.ok(s.fuel < 0.15);
+  const low = s.fuel;
+  for (let i = 0; i < 120; i++) s.step(1000 / 120, 0, 1, false);
+  assert.ok(s.fuel > low + 0.09);
+  s.dispose();
+});
+test("all three arcade courses can be completed with the starter cart", () => {
+  for (const course of Object.values(courses)) {
+    const s = createSimulation(preset(), 0.6, course);
+    s.load();
+    for (let i = 0; i < 120 * 45 && s.delivered < 15; i++)
+      s.step(1000 / 120, i > 240 ? 1 : 0, 1);
+    assert.equal(s.delivered, 15, course.name);
+    s.dispose();
+  }
+});
+test("orbit changes actual physics gravity", () => {
+  const s = createSimulation(preset(), 0.6, courses.orbit);
+  assert.equal(s.engine.gravity.y, 0.48);
+  s.dispose();
+});
+test("gold requires a perfect fast delivery, other medals reward retained cargo", () => {
+  assert.equal(medal(15, 17, 18), "gold");
+  assert.equal(medal(15, 25, 18), "silver");
+  assert.equal(medal(8, 17, 18), "bronze");
+  assert.equal(medal(2, 17, 18), "try again");
+});

@@ -14,22 +14,28 @@
       <header>
         <a class="brand" href="/"
           >◒ <span>COCONUT<span class="light"> RUN</span></span></a
-        ><span class="edition">THE WORKSHOP <i> / </i> AN INDEPENDENT HOMAGE</span
+        ><span class="edition"
+          >THE WORKSHOP <i> / </i> AN INDEPENDENT HOMAGE</span
         ><button id="help">How to play ↗</button>
       </header>
       <main>
         <div class="intro">
           <div>
-            <div class="eyebrow">A LITTLE INGENUITY GOES A LONG WAY</div>
-            <h1>Big ideas. <em>Precious cargo.</em></h1>
+            <div class="eyebrow">THE COCONUT DELIVERY CHAMPIONSHIP</div>
+            <h1>Go big. <em>Go nuts.</em></h1>
             <p>
-              Build something brilliant. Get all 15 coconuts to the other side.
+              Questionable engineering. Precious cargo. Unreasonably good times.
             </p>
             <p class="homage">
               An independent homage to the original Coconut Run, developed by
-              <a href="https://colordodge.com/coconut-run" target="_blank" rel="noreferrer">Jason K. Smith ↗</a>
-              with Colossal Squid Industries for Johnson Controls.
-              Not affiliated with or endorsed by Johnson Controls.
+              <a
+                href="https://colordodge.com/coconut-run"
+                target="_blank"
+                rel="noreferrer"
+                >Jason K. Smith ↗</a
+              >
+              with Colossal Squid Industries for Johnson Controls. Not
+              affiliated with or endorsed by Johnson Controls.
             </p>
           </div>
           <div class="steps">
@@ -37,6 +43,29 @@
             ><span id="step2">02 <b>LOAD</b></span
             ><span id="step3">03 <b>DRIVE</b></span>
           </div>
+        </div>
+        <div class="course-picker" aria-label="Choose a course">
+          <button class="course-card active" data-course="lagoon">
+            <span class="course-icon">◒</span
+            ><span
+              ><small>01 / THE CLASSIC</small><b>Lagoon Express</b
+              ><em>Rolling hills & island thrills</em></span
+            ><span class="course-medal" id="medal-lagoon">☆</span>
+          </button>
+          <button class="course-card" data-course="dunes">
+            <span class="course-icon">△</span
+            ><span
+              ><small>02 / BIG AIR</small><b>Dune Rally</b
+              ><em>Big climbs. Bigger mistakes.</em></span
+            ><span class="course-medal" id="medal-dunes">☆</span>
+          </button>
+          <button class="course-card" data-course="orbit">
+            <span class="course-icon">☾</span
+            ><span
+              ><small>03 / LOW GRAVITY</small><b>Coconut Orbit</b
+              ><em>One small step for a coconut</em></span
+            ><span class="course-medal" id="medal-orbit">☆</span>
+          </button>
         </div>
         <section class="workshop">
           <aside>
@@ -97,6 +126,14 @@
               <span><i></i> <b id="stage-label">DESIGN MODE</b></span
               ><span id="part-count">7 PARTS</span>
             </div>
+            <div class="arcade-hud">
+              <span class="hud-cargo">◒ <b id="aboard">15</b> aboard</span
+              ><span class="hud-stars" id="star-count">☆ ☆ ☆</span
+              ><span><b id="speed">0</b> km/h</span
+              ><span class="fuel-label"
+                >BOOST <i><b id="fuel"></b></i><kbd>SHIFT</kbd></span
+              >
+            </div>
             <canvas
               id="game"
               width="1000"
@@ -113,7 +150,8 @@
                 <span id="control-hint">Drive when you're ready</span>
               </div>
               <div>
-                <button id="save">Save design</button
+                <button id="demo">Quick ride ↗</button
+                ><button id="save">Save design</button
                 ><button id="restore">Restore</button>
               </div>
             </div>
@@ -121,15 +159,22 @@
               <div class="result-card">
                 <div class="eyebrow">RUN COMPLETE</div>
                 <h2 id="result-title">Nice delivery.</h2>
+                <div id="result-medal" class="medal-display">★</div>
                 <p id="result-stats"></p>
+                <p id="result-extras"></p>
+                <p id="result-best"></p>
+                <button id="retry" class="retry-button">Run it back ↻</button>
                 <button id="result-edit">Back to the workshop ↗</button>
               </div>
             </div>
           </div>
           <aside class="run-panel">
             <div class="panel-title">THE MISSION <span>↗</span></div>
-            <h2>Keep your<br /><em>coconuts.</em></h2>
-            <p>A bumpy road. A full cart.<br />One very good idea.</p>
+            <h2>Send it.<br /><em>Save your nuts.</em></h2>
+            <p id="course-description">
+              Rolling hills. Precious cargo. Find your rhythm.
+            </p>
+            <div class="record" id="record">YOUR FIRST MEDAL IS WAITING</div>
             <div class="stat">
               <label>COCONUTS DELIVERED</label>
               <div><strong id="cargo">00</strong><span>/ 15</span></div>
@@ -145,12 +190,14 @@
             </div>
             <button class="primary" id="start">
               Test your design <span>→</span></button
+            ><button id="boost" class="boost-button" disabled>
+              ⚡ Hold to boost <kbd>SHIFT</kbd></button
             ><button id="edit" hidden>↶ Back to build</button
             ><button id="pause" hidden>Pause</button>
             <p class="tip" id="tip">
-              PRO TIP<br /><span
-                >A wide wheelbase and a deep basket make a surprisingly good
-                team.</span
+              THE GOLD STANDARD<br /><span
+                >Deliver all 15 in 30 seconds for gold. Chase three stars along
+                the way.</span
               >
             </p>
           </aside>
@@ -159,7 +206,8 @@
           <span>DRAW. TINKER. TRY AGAIN.</span
           ><span
             >An independent homage to Coconut Run. Original digital production:
-            Colossal Squid Industries · Agency: Fallon · Client: Johnson Controls.
+            Colossal Squid Industries · Agency: Fallon · Client: Johnson
+            Controls.
             <a
               href="https://colordodge.com/coconut-run"
               target="_blank"
@@ -189,6 +237,12 @@
           on-screen arrows.
         </p>
         <p>
+          <b>4. Go nuts.</b> Hold Shift or the boost button for a burst of
+          speed. Your tank recharges when you ease off. Collect three stars,
+          chase gold medals, and beat your best on each course. Press T for a
+          quick retry.
+        </p>
+        <p>
           Deliver coconuts into the shredder at the finish. Your score rewards
           cargo and speed. Return to the workshop anytime to improve your
           design.
@@ -197,7 +251,8 @@
       </dialog>
       <div class="touch-controls">
         <button id="left" aria-label="Drive left">←</button
-        ><button id="right" aria-label="Drive right">→</button>
+        ><button id="right" aria-label="Drive right">→</button
+        ><button id="touch-boost" aria-label="Boost">⚡</button>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

@@ -320,11 +320,23 @@ canvas {
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
 }
-.homage { max-width: 620px; margin-top: 8px; font-size: 10px; }
-.homage a { color: #466b4b; }
-#timer { min-width: 5ch; }
-#cargo { min-width: 2ch; }
-#start { min-height: 44px; }
+.homage {
+  max-width: 620px;
+  margin-top: 8px;
+  font-size: 10px;
+}
+.homage a {
+  color: #466b4b;
+}
+#timer {
+  min-width: 5ch;
+}
+#cargo {
+  min-width: 2ch;
+}
+#start {
+  min-height: 44px;
+}
 .stat span {
   font-size: 10px;
   color: #83917a;
@@ -616,3 +628,495 @@ canvas {
     min-height: 0;
   }
 }
+/* Coconut Delivery Championship */
+:root {
+  color: #163f42;
+  background: #f5f1e8;
+}
+header {
+  background: #173f42;
+  color: #f9f1d9;
+  border: 0;
+  height: 70px;
+}
+.brand,
+header button {
+  color: #fff4dd;
+}
+.brand > span {
+  font-size: 20px;
+}
+.edition {
+  color: #c0d2c7;
+}
+.edition i {
+  color: #efaa69;
+}
+main {
+  padding-top: 25px;
+}
+.intro {
+  margin-bottom: 22px;
+}
+h1 {
+  font-weight: 700;
+  font-size: clamp(34px, 4vw, 55px);
+  letter-spacing: -2.4px;
+}
+h1 em {
+  color: #e8784e;
+}
+.eyebrow {
+  color: #b76a42;
+  letter-spacing: 2px;
+}
+.steps .current {
+  color: #cd704b;
+  border-color: #cd704b;
+}
+.homage {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #78877e;
+}
+.course-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.course-card {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid #d5dbcc;
+  border-radius: 8px;
+  background: #fffaf0;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.course-card.active {
+  border: 2px solid #23726c;
+  padding: 13px 17px;
+  background: #e8eee1;
+}
+.course-card:hover {
+  background: #e4eddf;
+}
+.course-icon {
+  font: 38px Georgia;
+  color: #32867c;
+}
+.course-card[data-course="dunes"] .course-icon {
+  color: #cd8959;
+}
+.course-card[data-course="orbit"] .course-icon {
+  color: #7b78ab;
+}
+.course-card small {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.6px;
+  color: #799087;
+}
+.course-card b {
+  display: block;
+  font: 600 17px "Space Grotesk";
+  margin: 4px 0;
+}
+.course-card em {
+  font: 10px "DM Sans";
+  color: #7b8a7f;
+}
+.course-medal {
+  margin-left: auto;
+  font-size: 26px;
+  color: #b7bea6;
+}
+.course-medal.gold {
+  color: #dba143;
+}
+.course-medal.silver {
+  color: #7a9699;
+}
+.course-medal.bronze {
+  color: #b77c55;
+}
+.workshop {
+  grid-template-columns: 165px minmax(0, 1fr) 195px;
+  border-color: #bfcfbd;
+  box-shadow: 0 9px 30px #173f420a;
+  background: #fffaf0;
+}
+.workshop > aside {
+  padding: 18px 14px;
+}
+.panel-title {
+  color: #446b60;
+  font-size: 9px;
+  margin-bottom: 18px;
+}
+#tools button {
+  background: #f3f1e5;
+  border-color: #d7dcc9;
+}
+#tools button.selected {
+  background: #d8e8d6;
+  border-color: #398477;
+  box-shadow: inset 0 -3px #39847730;
+}
+.stage {
+  background: #e0ede1;
+}
+.stage-bar {
+  padding: 12px 18px;
+  background: #e3eddf;
+}
+.stage-bar i {
+  background: #e98151;
+}
+.arcade-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #17494b;
+  color: #e4f1d8;
+  padding: 11px 16px;
+  font-size: 10px;
+  gap: 8px;
+  height: 44px;
+  font-variant-numeric: tabular-nums;
+}
+.arcade-hud b {
+  font-family: "Space Grotesk";
+  font-size: 14px;
+}
+.hud-cargo {
+  color: #ffdb9b;
+}
+.hud-stars {
+  font-size: 21px;
+  letter-spacing: 3px;
+  color: #ffd378;
+  min-width: 80px;
+  text-align: center;
+}
+.fuel-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.fuel-label i {
+  display: block;
+  width: 65px;
+  height: 7px;
+  border-radius: 5px;
+  background: #47706b;
+  overflow: hidden;
+}
+.fuel-label i b {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #ffc36c;
+  border-radius: 5px;
+}
+kbd {
+  font: 8px "DM Sans";
+  padding: 3px;
+  border: 1px solid #ffffff45;
+  border-radius: 3px;
+}
+.run-panel {
+  background: #e8eedf;
+}
+.run-panel h2 {
+  font-size: 28px;
+  margin: 18px 0 12px;
+}
+.run-panel h2 em {
+  color: #df8351;
+}
+.run-panel p {
+  font-size: 10px;
+}
+.record {
+  font-size: 8px;
+  letter-spacing: 0.7px;
+  color: #547568;
+  min-height: 26px;
+  padding-top: 10px;
+}
+.stat {
+  padding: 12px 0 8px;
+}
+.stat strong {
+  font-size: 30px;
+}
+.route {
+  margin: 16px 0;
+}
+.primary {
+  background: #e88856;
+  color: #233d35;
+  font-weight: 700;
+  box-shadow: 0 3px #bc6944;
+}
+.primary:hover {
+  background: #f29e6b;
+}
+.boost-button {
+  width: 100%;
+  padding: 10px 4px;
+  margin-top: 11px;
+  border-radius: 4px;
+  background: #214f4f;
+  color: #ffe3a0;
+  font-size: 10px;
+  min-height: 35px;
+  touch-action: none;
+}
+.boost-button.charging {
+  background: #e99d51;
+  color: #243d38;
+}
+.boost-button kbd {
+  margin-left: 4px;
+}
+.tip {
+  margin-top: 15px !important;
+}
+#notice {
+  height: 48px;
+  overflow: hidden;
+  padding: 12px 10px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.stage-bottom {
+  min-height: 54px;
+  padding: 12px 14px;
+}
+.stage-bottom button {
+  border-radius: 3px;
+  border: 1px solid #c0cfb9;
+  padding: 5px 7px;
+}
+.result-card {
+  max-width: 90%;
+  background: #fff8e7;
+  padding: 25px 28px;
+  border: 2px solid #e9b46e;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px #20484324;
+}
+.result-card h2 {
+  font-size: 29px;
+  margin: 10px 0;
+}
+.result-card p {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.medal-display {
+  font-size: 70px;
+  line-height: 1.2;
+  color: #e7ac45;
+  text-shadow: 0 3px #b78239;
+}
+.medal-display.silver {
+  color: #96afb2;
+  text-shadow: 0 3px #617f85;
+}
+.medal-display.bronze {
+  color: #c58e65;
+  text-shadow: 0 3px #976342;
+}
+.result-card .retry-button {
+  background: #e88b55;
+  color: #173f42;
+  margin-right: 8px;
+}
+#result {
+  background: #173f428c;
+  backdrop-filter: blur(3px);
+}
+#result-best {
+  font-weight: 700;
+  color: #c57a43;
+  margin-top: 8px;
+}
+.touch-controls button:last-child {
+  background: #df8d4e;
+}
+.course-card:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+footer {
+  font-size: 9px;
+}
+footer > span:nth-child(2) {
+  max-width: 700px;
+  line-height: 1.6;
+}
+@media (min-width: 1450px) {
+  .workshop {
+    grid-template-columns: 190px minmax(0, 1fr) 220px;
+  }
+}
+@media (max-width: 1000px) {
+  .workshop {
+    grid-template-columns: 140px minmax(0, 1fr) 165px;
+  }
+  .course-card {
+    padding: 12px;
+    gap: 8px;
+  }
+  .course-card.active {
+    padding: 11px;
+  }
+  .course-card b {
+    font-size: 14px;
+  }
+  .course-card em {
+    font-size: 9px;
+  }
+  .course-icon {
+    font-size: 28px;
+  }
+  .arcade-hud {
+    padding: 10px 8px;
+  }
+  .fuel-label kbd {
+    display: none;
+  }
+  .fuel-label i {
+    width: 45px;
+  }
+  .run-panel h2 {
+    font-size: 25px;
+  }
+  .workshop > aside {
+    padding: 15px 10px;
+  }
+}
+@media (max-width: 700px) {
+  header {
+    height: 58px;
+  }
+  main {
+    padding: 18px 2vw 0;
+  }
+  .intro {
+    margin-bottom: 15px;
+  }
+  .steps {
+    margin-top: 8px;
+  }
+  .course-picker {
+    gap: 6px;
+  }
+  .course-card,
+  .course-card.active {
+    display: block;
+    text-align: center;
+    padding: 9px 4px;
+  }
+  .course-icon,
+  .course-medal,
+  .course-card em {
+    display: none;
+  }
+  .course-card small {
+    font-size: 6px;
+    letter-spacing: 0.4px;
+  }
+  .course-card b {
+    font-size: 12px;
+    margin: 4px 0 0;
+  }
+  .course-card.active {
+    box-shadow: inset 0 -3px #39847730;
+  }
+  .workshop {
+    grid-template-columns: 1fr;
+  }
+  .arcade-hud {
+    font-size: 8px;
+    height: 40px;
+  }
+  .arcade-hud b {
+    font-size: 12px;
+  }
+  .hud-stars {
+    font-size: 17px;
+    min-width: 65px;
+  }
+  .fuel-label {
+    font-size: 7px;
+  }
+  .run-panel .record {
+    display: none;
+  }
+  .run-panel {
+    gap: 8px;
+  }
+  .run-panel .boost-button {
+    width: auto;
+    flex: 1;
+    margin-top: 0;
+  }
+  .run-panel .boost-button kbd {
+    display: none;
+  }
+  .run-panel .primary {
+    font-size: 10px;
+  }
+  .stat strong {
+    font-size: 23px;
+  }
+  .stat label {
+    font-size: 6px;
+  }
+  .result-card {
+    padding: 15px;
+  }
+  .result-card h2 {
+    font-size: 22px;
+  }
+  .medal-display {
+    font-size: 44px;
+  }
+  .result-card button {
+    padding: 10px;
+    font-size: 10px;
+  }
+  .homage {
+    font-size: 9px;
+  }
+  .touch-controls {
+    bottom: 12px;
+    right: 12px;
+    gap: 8px;
+  }
+  .touch-controls button {
+    width: 46px;
+    height: 39px;
+  }
+  .stage-bottom {
+    padding-bottom: 14px;
+    min-height: 48px;
+  }
+  footer {
+    padding-bottom: 65px;
+  }
+}
+/* Fixed HUD columns keep changing speed/cargo digits from shifting controls. */
+.arcade-hud{display:grid;grid-template-columns:110px minmax(65px,1fr) 75px 155px}
+@media(max-width:1000px){.arcade-hud{grid-template-columns:85px minmax(60px,1fr) 55px 100px;gap:6px}}

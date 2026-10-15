@@ -75,21 +75,23 @@ export function validateDesign(parts) {
     return "Add a frame or basket to carry your coconuts.";
   return null;
 }
-export function createSimulation(parts, stiffness = 0.6) {
+export function createSimulation(parts, stiffness = 0.6, course = {}) {
   const engine = Engine.create({
     positionIterations: 10,
     velocityIterations: 10,
     constraintIterations: 8,
   });
-  engine.gravity.y = 1;
+  engine.gravity.y = course.gravity ?? 1;
+  const routeTerrain = course.terrain ?? terrain;
+  const finish = course.finish ?? FINISH;
   const group = Body.nextGroup(true),
     objects = [],
     wheels = [],
     coconuts = [],
     joints = [];
-  for (let i = 0; i < terrain.length - 1; i++) {
-    const [x, y] = terrain[i],
-      [x2, y2] = terrain[i + 1];
+  for (let i = 0; i < routeTerrain.length - 1; i++) {
+    const [x, y] = routeTerrain[i],
+      [x2, y2] = routeTerrain[i + 1];
     const vertices = [
       { x, y },
       { x: x2, y: y2 },
@@ -193,13 +195,21 @@ export function createSimulation(parts, stiffness = 0.6) {
   }
   let loaded = false,
     elapsed = 0,
-    delivered = 0;
+    delivered = 0,
+    fuel = 1,
+    boosting = false;
   return {
     engine,
     objects,
     wheels,
     coconuts,
     joints,
+    get fuel() {
+      return fuel;
+    },
+    get boosting() {
+      return boosting;
+    },
     get elapsed() {
       return elapsed;
     },
@@ -221,21 +231,35 @@ export function createSimulation(parts, stiffness = 0.6) {
         Composite.add(engine.world, c);
       }
     },
-    step(dt, drive, power) {
+    step(dt, drive, power, boost = false) {
+      // A small restart threshold keeps an empty tank from flickering each tick.
+      boosting = loaded && boost && !!drive && fuel > (boosting ? 0.005 : 0.12);
+      if (loaded)
+        fuel = Math.max(
+          0,
+          Math.min(1, fuel + ((boosting ? -0.36 : 0.1) * dt) / 1000),
+        );
+      const motor = power * (boosting ? 1.9 : 1);
       if (loaded) elapsed += dt / 1000;
       for (const w of wheels) {
         if (drive)
           Body.setAngularVelocity(
             w,
             w.angularVelocity +
-              (drive * power * 0.23 - w.angularVelocity) * 0.08,
+              (drive * motor * 0.23 - w.angularVelocity) * 0.08,
           );
         else Body.setAngularVelocity(w, w.angularVelocity * 0.97);
       }
+      if (boosting)
+        for (const { body } of objects)
+          Body.applyForce(body, body.position, {
+            x: drive * body.mass * 0.00018,
+            y: 0,
+          });
       Engine.update(engine, dt);
       for (const c of coconuts) {
         if (c.plugin.state !== "live") continue;
-        if (c.position.x > FINISH && c.position.y > 280 && c.position.y < 600) {
+        if (c.position.x > finish && c.position.y > 280 && c.position.y < 600) {
           c.plugin.state = "delivered";
           delivered++;
           Composite.remove(engine.world, c);

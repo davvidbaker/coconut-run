@@ -5,10 +5,47 @@ import {
   shape,
   validateDesign,
   createSimulation,
-  terrain,
-  FINISH,
   score,
 } from "./physics.js";
+import { courses, groundHeight, medal } from "./courses.js";
+import { Effects, drawStar } from "./effects.js";
+import { scenery } from "./scenery.js";
+let courseId = "lagoon",
+  course = courses.lagoon,
+  terrain = course.terrain,
+  FINISH = course.finish;
+let autoDrive = false;
+let boostHeld = false,
+  collected = new Set(),
+  airtime = 0,
+  airStreak = 0,
+  wasAir = false,
+  lastDelivered = 0,
+  nextGate = 1500,
+  records = {};
+const effects = new Effects();
+try {
+  records = JSON.parse(localStorage.getItem("coconut-run-records")) || {};
+} catch {}
+function refreshRecords() {
+  for (const id of Object.keys(courses)) {
+    const rec = records[id];
+    const el = document.getElementById("medal-" + id);
+    el.textContent = rec
+      ? { gold: "★", silver: "★", bronze: "★" }[rec.medal] || "☆"
+      : "☆";
+    el.className = "course-medal " + (rec?.medal || "");
+  }
+  const rec = records[courseId];
+  document.getElementById("record").textContent = rec
+    ? "BEST: " +
+      rec.cargo +
+      "/15 · " +
+      rec.time.toFixed(1) +
+      "s · " +
+      rec.medal.toUpperCase()
+    : "YOUR FIRST MEDAL IS WAITING";
+}
 const $ = (id) => document.getElementById(id),
   canvas = $("game"),
   ctx = canvas.getContext("2d");
@@ -46,6 +83,22 @@ function update() {
   $("clear").disabled = mode !== "build";
   $("preset").disabled = mode !== "build";
   $("stiffness").disabled = mode !== "build";
+  document.querySelectorAll("[data-course]").forEach((b) => {
+    b.disabled = mode !== "build";
+    b.classList.toggle("active", b.dataset.course === courseId);
+  });
+  $("boost").disabled = mode !== "drive" || paused;
+  $("demo").textContent =
+    mode === "drive"
+      ? autoDrive
+        ? "Auto-drive: ON"
+        : "Auto-drive: OFF"
+      : "Quick ride ↗";
+  $("course-description").textContent = course.description;
+  $("tip").innerHTML =
+    "THE GOLD STANDARD<br><span>Deliver all 15 in " +
+    course.gold +
+    " seconds for gold. Chase three stars along the way.</span>";
   $("stage-label").textContent =
     mode === "build"
       ? "DESIGN MODE"
@@ -66,10 +119,13 @@ function update() {
   $("edit").hidden = mode === "build";
   $("pause").hidden = mode !== "drive";
   $("pause").textContent = paused ? "Resume" : "Pause";
+  $("pause").disabled = !$("result").hidden;
+  $("start").disabled = !$("result").hidden;
+  $("demo").disabled = !$("result").hidden;
   $("control-hint").textContent =
     mode === "build"
       ? "Drive when you're ready"
-      : "Hold to drive · R to rebuild";
+      : "Drive · SHIFT boost · T retry";
 }
 function point(e) {
   const r = canvas.getBoundingClientRect();
@@ -186,9 +242,23 @@ function build() {
   paused = false;
   camera = 0;
   keys.clear();
+  boostHeld = false;
   drive = 0;
   finishAt = null;
   accumulator = 0;
+  autoDrive = false;
+  boostHeld = false;
+  collected.clear();
+  airtime = 0;
+  airStreak = 0;
+  wasAir = false;
+  lastDelivered = 0;
+  nextGate = 1500;
+  effects.clear();
+  $("aboard").textContent = "15";
+  $("star-count").textContent = "☆ ☆ ☆";
+  $("fuel").style.width = "100%";
+  $("speed").textContent = "0";
   $("result").hidden = true;
   $("cargo").textContent = "00";
   $("timer").textContent = "00:00";
@@ -201,14 +271,56 @@ function finish() {
   paused = true;
   $("result").hidden = false;
   const n = sim.delivered;
-  $("result-title").textContent =
-    n === 15
-      ? "Every coconut counts."
-      : n > 0
-        ? "A fruitful experiment."
-        : "Back to the drawing board.";
   $("result-stats").textContent =
     `${n} / 15 delivered · ${sim.elapsed.toFixed(1)} seconds · ${score(n, sim.elapsed)}% efficiency`;
+  const award = medal(n, sim.elapsed, course.gold);
+  $("result-medal").className = "medal-display " + award;
+  $("result-medal").textContent = award === "try again" ? "↻" : "★";
+  $("result-title").textContent =
+    award === "gold"
+      ? "Certified coconut legend."
+      : award === "silver"
+        ? "That’s a sweet delivery."
+        : award === "bronze"
+          ? "Beautifully questionable."
+          : "One more terrible idea?";
+  $("result-extras").textContent =
+    (award === "try again" ? "NO MEDAL YET" : award.toUpperCase() + " MEDAL") +
+    " · " +
+    collected.size +
+    "/3 stars · " +
+    airtime.toFixed(1) +
+    "s airtime";
+  const previous = records[courseId];
+  const better =
+    n > 0 &&
+    (!previous ||
+      n > previous.cargo ||
+      (n === previous.cargo && sim.elapsed < previous.time));
+  if (better) {
+    records[courseId] = {
+      cargo: n,
+      time: sim.elapsed,
+      medal: award,
+      stars: collected.size,
+    };
+    try {
+      localStorage.setItem("coconut-run-records", JSON.stringify(records));
+    } catch {}
+  }
+  $("result-best").textContent = better
+    ? "NEW PERSONAL BEST!"
+    : previous
+      ? "Personal best: " +
+        previous.cargo +
+        "/15 in " +
+        previous.time.toFixed(1) +
+        "s"
+      : "Wider wheels. Deeper basket. Another go.";
+  refreshRecords();
+  if (n)
+    for (let i = 0; i < 8; i++)
+      effects.burst(camera + 100 + i * 110, 70, "#ffcd67", 15);
   beep(n ? 650 : 140);
   update();
 }
@@ -219,7 +331,7 @@ $("start").onclick = () => {
       notice(error);
       return;
     }
-    sim = createSimulation(parts, Number($("stiffness").value) / 10);
+    sim = createSimulation(parts, Number($("stiffness").value) / 10, course);
     mode = "load";
     notice(
       "Your cart is ready. Release the coconuts, let them settle, then hold → to drive.",
@@ -229,7 +341,7 @@ $("start").onclick = () => {
     mode = "drive";
     canvas.focus({ preventScroll: true });
     notice(
-      "Hold → / D to drive. Ease off over bumps. Deliver your coconuts to the shredder.",
+      "Hold → to drive, SHIFT for boost. Collect stars. Keep your cargo. Go nuts.",
     );
     beep(500);
   } else finish();
@@ -237,6 +349,45 @@ $("start").onclick = () => {
 };
 $("edit").onclick = build;
 $("result-edit").onclick = build;
+function retry() {
+  build();
+  $("start").click();
+  $("start").click();
+}
+$("retry").onclick = retry;
+$("demo").onclick = () => {
+  if (mode !== "drive") {
+    retry();
+    autoDrive = true;
+  } else autoDrive = !autoDrive;
+  update();
+  notice(
+    autoDrive
+      ? "Auto-drive is on. Take over with ← →, or hold SHIFT for boost."
+      : "You’re driving. Hold → to go, SHIFT for boost.",
+  );
+};
+for (const b of document.querySelectorAll("[data-course]"))
+  b.onclick = () => {
+    build();
+    courseId = b.dataset.course;
+    course = courses[courseId];
+    terrain = course.terrain;
+    FINISH = course.finish;
+    refreshRecords();
+    update();
+    notice(course.description);
+  };
+for (const id of ["boost", "touch-boost"]) {
+  const b = $(id);
+  b.onpointerdown = (e) => {
+    if (mode !== "drive" || paused) return;
+    e.preventDefault();
+    b.setPointerCapture(e.pointerId);
+    boostHeld = true;
+  };
+  b.onpointerup = b.onpointercancel = () => (boostHeld = false);
+}
 $("pause").onclick = () => {
   paused = !paused;
   keys.clear();
@@ -293,9 +444,15 @@ window.addEventListener("keydown", (e) => {
     return;
   // Arrow keys belong to the game, including up/down, which otherwise scroll
   // the page while the player is driving. Form controls retain native editing.
-  if (e.key.startsWith("Arrow")) e.preventDefault();
+  if (e.key.startsWith("Arrow") || e.key === "Shift") e.preventDefault();
+  if (e.key === "Shift") keys.add("shift");
+  if (e.key.toLowerCase() === "t" && mode === "drive") retry();
   if (["ArrowLeft", "ArrowRight", "a", "d", "A", "D"].includes(e.key)) {
     e.preventDefault();
+    if (autoDrive) {
+      autoDrive = false;
+      update();
+    }
     keys.add(e.key.toLowerCase());
   }
   if (e.key.toLowerCase() === "r") build();
@@ -307,10 +464,12 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 window.addEventListener("blur", () => {
   keys.clear();
+  boostHeld = false;
   drive = 0;
 });
 document.addEventListener("visibilitychange", () => {
   keys.clear();
+  boostHeld = false;
   drive = 0;
   last = performance.now();
 });
@@ -322,7 +481,9 @@ for (const [id, n] of [
   b.onpointerdown = (e) => {
     e.preventDefault();
     b.setPointerCapture(e.pointerId);
+    autoDrive = false;
     drive = n;
+    update();
   };
   b.onpointerup = b.onpointercancel = () => (drive = 0);
 }
@@ -421,70 +582,48 @@ function spring(a, b) {
 }
 function draw() {
   ctx.clearRect(0, 0, 1000, 580);
-  ctx.fillStyle = "#edf0e6";
-  ctx.fillRect(0, 0, 1000, 580);
+  scenery(
+    ctx,
+    camera,
+    terrain,
+    course.theme,
+    performance.now() / 1000,
+    mode === "build",
+  );
   ctx.save();
   ctx.translate(-camera, 0);
-  ctx.strokeStyle = "#dee4d4";
-  ctx.lineWidth = 0.7;
-  for (let x = Math.floor(camera / 25) * 25; x < camera + 1000; x += 25) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 580);
-    ctx.stroke();
-  }
-  for (let y = 0; y < 580; y += 25) {
-    ctx.beginPath();
-    ctx.moveTo(camera, y);
-    ctx.lineTo(camera + 1000, y);
-    ctx.stroke();
-  }
-  // Quiet landscape behind the engineering drawing.
-  ctx.fillStyle = "#dfe6d3";
-  ctx.beginPath();
-  ctx.moveTo(camera, 460);
-  for (let x = camera; x <= camera + 1020; x += 20)
-    ctx.lineTo(x, 400 + Math.sin(x / 220) * 35 + Math.cos(x / 120) * 18);
-  ctx.lineTo(camera + 1020, 580);
-  ctx.lineTo(camera, 580);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(terrain[0][0], 850);
-  terrain.forEach(([x, y]) => ctx.lineTo(x, y));
-  ctx.lineTo(5100, 850);
-  ctx.closePath();
-  ctx.fillStyle = "#ced8b7";
-  ctx.fill();
-  line(
-    terrain.map(([x, y]) => ({ x, y })),
-    "#718462",
-    3,
-  );
-  for (let x = 50; x < 5100; x += 180) {
-    const seg = terrain.findIndex(
-      (p, i) => i < terrain.length - 1 && x >= p[0] && x < terrain[i + 1][0],
-    );
-    if (seg < 0) continue;
-    const a = terrain[seg],
-      b = terrain[seg + 1],
-      y = a[1] + ((b[1] - a[1]) * (x - a[0])) / (b[0] - a[0]);
+  for (const [i, star] of course.stars.entries())
+    if (!collected.has(i)) {
+      circle(star.x, star.y, 27, "#fff0b52a");
+      drawStar(
+        ctx,
+        star.x,
+        star.y,
+        17,
+        "#ffca60",
+        Math.sin(performance.now() / 500) * 0.13,
+      );
+    }
+  for (const x of [1500, 3000]) {
+    const y = groundHeight(terrain, x);
     line(
       [
-        { x, y: y + 24 },
-        { x: x + 15, y: y + 18 },
-        { x: x + 25, y: y + 30 },
+        { x, y },
+        { x, y: y - 125 },
       ],
-      "#a7b58f",
-      1,
+      "#f3c877",
+      3,
     );
+    ctx.fillStyle = "#ed905b";
+    ctx.beginPath();
+    ctx.moveTo(x, y - 125);
+    ctx.lineTo(x + 50, y - 113);
+    ctx.lineTo(x, y - 100);
+    ctx.fill();
   }
-  ctx.fillStyle = "#7e9270";
-  ctx.font = '10px "DM Sans"';
-  ctx.fillText("THE WORKSHOP", 265, 520);
-  ctx.fillText("ROUGH ROAD AHEAD →", 780, 545);
   // Loading hopper is a guide, not a colliding part.
   if (camera < 600) {
-    ctx.fillStyle = "#e2e7d8";
+    ctx.fillStyle = "#fbf1cf";
     ctx.beginPath();
     ctx.moveTo(325, 35);
     ctx.lineTo(470, 35);
@@ -494,7 +633,7 @@ function draw() {
     ctx.fill();
     ctx.strokeStyle = "#a8b69a";
     ctx.stroke();
-    ctx.fillStyle = "#86977a";
+    ctx.fillStyle = "#52746b";
     ctx.font = '9px "DM Sans"';
     ctx.fillText("15 COCONUTS", 357, 63);
     line(
@@ -554,12 +693,13 @@ function draw() {
     }
   }
   ctx.restore();
+  effects.draw(ctx, camera);
   if (mode === "build") {
-    ctx.fillStyle = "#8b9a7c";
+    ctx.fillStyle = "#285c5e";
     ctx.font = '10px "DM Sans"';
-    ctx.fillText("DESIGN YOUR WAY THROUGH.", 30, 35);
+    ctx.fillText("BAD IDEAS WELCOME.", 30, 35);
     ctx.font = '9px "DM Sans"';
-    ctx.fillText("Each idea starts with a line.", 30, 53);
+    ctx.fillText("Draw it. Drive it. Blame the coconuts.", 30, 53);
   }
 }
 function frame(now) {
@@ -571,14 +711,95 @@ function frame(now) {
       const input =
         mode === "drive"
           ? drive ||
-            (keys.has("arrowright") || keys.has("d") ? 1 : 0) -
-              (keys.has("arrowleft") || keys.has("a") ? 1 : 0)
+            ((autoDrive && sim.elapsed > 1.6) ||
+            keys.has("arrowright") ||
+            keys.has("d")
+              ? 1
+              : 0) - (keys.has("arrowleft") || keys.has("a") ? 1 : 0)
           : 0;
-      sim.step(1000 / 120, input, Number($("power").value) / 60);
+      sim.step(
+        1000 / 120,
+        input,
+        Number($("power").value) / 60,
+        boostHeld || keys.has("shift"),
+      );
+      if (mode === "drive") {
+        const airborne =
+          sim.wheels.every(
+            (w) =>
+              groundHeight(terrain, w.position.x) -
+                w.position.y -
+                w.circleRadius >
+              14,
+          ) && sim.x > 650;
+        if (airborne) {
+          airtime += 1 / 120;
+          airStreak += 1 / 120;
+        } else if (wasAir) {
+          if (airStreak > 0.55) {
+            effects.toast("AIR MAIL! " + airStreak.toFixed(1) + "s", "#ffe097");
+            beep(720);
+          }
+          airStreak = 0;
+        }
+        wasAir = airborne;
+      }
       accumulator -= 1000 / 120;
     }
     camera +=
       (Math.max(0, Math.min(FINISH - 400, sim.x - 380)) - camera) * 0.09;
+    $("fuel").style.width = sim.fuel * 100 + "%";
+    $("boost").classList.toggle("charging", sim.boosting);
+    const velocity =
+      sim.wheels.reduce((sum, w) => sum + w.velocity.x, 0) / sim.wheels.length;
+    $("speed").textContent = String(Math.round(Math.abs(velocity) * 12));
+    $("aboard").textContent = String(
+      sim.coconuts.filter(
+        (c) =>
+          c.plugin.state === "live" && Math.abs(c.position.x - sim.x) < 180,
+      ).length,
+    );
+    if (mode === "drive") {
+      const frameBodies = sim.objects.filter((o) => o.part.type !== "wheel");
+      for (const [i, star] of course.stars.entries())
+        if (
+          !collected.has(i) &&
+          frameBodies.some(
+            (o) =>
+              Math.hypot(
+                o.body.position.x - star.x,
+                o.body.position.y - star.y,
+              ) < 100,
+          )
+        ) {
+          collected.add(i);
+          effects.burst(star.x, star.y);
+          effects.toast("STAR DELIVERY! " + collected.size + "/3");
+          beep(650 + collected.size * 140);
+        }
+      $("star-count").textContent = [0, 1, 2]
+        .map((i) => (collected.has(i) ? "★" : "☆"))
+        .join(" ");
+      if (sim.x > nextGate && nextGate < FINISH) {
+        effects.toast("CHECKPOINT · KEEP IT TOGETHER");
+        beep(520);
+        nextGate += 1500;
+      }
+      if (sim.delivered > lastDelivered) {
+        effects.burst(FINISH + 60, 390, "#ffe7a0", 8);
+        beep(500 + sim.delivered * 24);
+        lastDelivered = sim.delivered;
+      }
+      if (Math.abs(velocity) > 0.5 && !effects.reduced && Math.random() < 0.3) {
+        const w = sim.wheels[0];
+        effects.burst(
+          w.position.x - w.circleRadius,
+          w.position.y + w.circleRadius,
+          sim.boosting ? "#ff9a50" : "#d6c197",
+          sim.boosting ? 4 : 1,
+        );
+      }
+    }
     $("cargo").textContent = String(sim.delivered).padStart(2, "0");
     const secs = Math.floor(sim.elapsed);
     $("timer").textContent =
@@ -600,8 +821,10 @@ function frame(now) {
       } else if (sim.coconuts.length && sim.live === 0) finish();
     }
   }
+  effects.update(paused ? 0.016 : dt / 1000);
   draw();
   requestAnimationFrame(frame);
 }
+refreshRecords();
 update();
 requestAnimationFrame(frame);

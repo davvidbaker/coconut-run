@@ -21,3 +21,11 @@ The recreated course and efficiency formula approximate the original experience;
 - Gameplay video inspected: https://www.youtube.com/watch?v=PzKAlUex3cQ
 - Contemporary mechanics discussion: https://boards.straightdope.com/t/sweet-little-flash-physics-engineering-game-coconut-run/485795
 - Archived tool descriptions and video collection: https://flamani.blog.fc2.com/blog-entry-75.html
+
+## Arcade edition
+
+Three selectable courses: Lagoon Express, Dune Rally, and Coconut Orbit (48% gravity). Hold Shift or the boost button for a rechargeable speed burst. Stars, checkpoint flags, airtime callouts, delivery confetti and gold/silver/bronze medals reward experimentation. Course personal bests stay in browser local storage.
+
+**Quick ride** loads and drives your current design automatically after letting the cargo settle. Arrow keys take over immediately. **T** retries and **R** returns to the workshop. Sound is opt-in; reduced-motion preferences reduce particle effects.
+
+Original campaign credits: game developer Jason K. Smith; digital production Colossal Squid Industries; agency Fallon; client Johnson Controls. This is an independent homage, not an official Johnson Controls game.
