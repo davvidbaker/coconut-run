@@ -67,7 +67,7 @@ export function scenery(ctx, camera, terrain, theme, time, build) {
   ctx.save();
   ctx.translate(-camera, 0);
   // Every scenery prop is decorative; terrain remains the physics source of truth.
-  for (let x = 640; x < 4700; x += 610) {
+  for (let x = 640; x < terrain.at(-1)[0]; x += 610) {
     const y = groundHeight(terrain, x);
     if (x < camera - 100 || x > camera + 1100) continue;
     if (night) {
@@ -109,7 +109,7 @@ export function scenery(ctx, camera, terrain, theme, time, build) {
   ctx.beginPath();
   ctx.moveTo(terrain[0][0], 850);
   terrain.forEach(([x, y]) => ctx.lineTo(x, y));
-  ctx.lineTo(5100, 850);
+  ctx.lineTo(terrain.at(-1)[0], 850);
   ctx.closePath();
   ctx.fillStyle = night ? "#78869b" : sand ? "#c4936a" : "#b6976a";
   ctx.fill();
@@ -122,7 +122,7 @@ export function scenery(ctx, camera, terrain, theme, time, build) {
   ctx.strokeStyle = night ? "#85998e" : "#6b9b64";
   ctx.lineWidth = 5;
   ctx.stroke();
-  for (let x = 0; x < 5100; x += 95) {
+  for (let x = 0; x < terrain.at(-1)[0]; x += 95) {
     const y = groundHeight(terrain, x);
     ctx.fillStyle = night ? "#66758b" : "#977953";
     ctx.beginPath();

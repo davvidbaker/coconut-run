@@ -1,3 +1,4 @@
+import { garage } from "./garage.js";
 import Matter from "matter-js";
 const { Bodies, Body, Composite, Constraint, Engine, Query, Vector } = Matter;
 export const FINISH = 4700;
@@ -27,6 +28,7 @@ export const terrain = [
   [5100, 480],
 ];
 export function preset(name = "cart") {
+  if (garage[name]) return structuredClone(garage[name].parts);
   const beam = (x, y, x2, y2) => ({ type: "beam", x, y, x2, y2 });
   if (name === "empty") return [];
   const big = name === "monster",
@@ -111,15 +113,48 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
     Body.translate(ground, { x: x - minX, y: Math.min(y, y2) - minY });
     Composite.add(engine.world, ground);
   }
-  for (const p of parts.filter((p) => p.type !== "spring")) {
+  for (const p of parts.filter((p) => !["spring", "hinge"].includes(p.type))) {
     const body = shape(p, { collisionFilter: { group }, density: 0.0025 });
-    body.plugin = { kind: p.type };
+    body.plugin = {
+      kind: p.type,
+      powered: p.powered !== false,
+      powerScale: p.powerScale ?? 1,
+      welded: p.welded,
+      assembly: p.assembly,
+    };
     objects.push({ part: p, body });
     if (p.type === "wheel") wheels.push(body);
     Composite.add(engine.world, body);
   }
+  // Named assemblies are rigid compound bodies; joints connect assemblies, not
+  // their individual decorative beams. The open spaces remain real openings.
+  const assemblies = new Map();
+  for (const o of objects)
+    if (o.part.assembly && (o.part.type !== "wheel" || o.part.welded)) {
+      const list = assemblies.get(o.part.assembly) || [];
+      list.push(o);
+      assemblies.set(o.part.assembly, list);
+    }
+  for (const [name, list] of assemblies)
+    if (list.length > 1) {
+      for (const o of list) Composite.remove(engine.world, o.body);
+      const root = Body.create({
+        parts: list.map((o) => o.body),
+        collisionFilter: { group },
+        friction: 0.8,
+      });
+      Composite.add(engine.world, root);
+      const hub = list.find((o) => o.part.welded);
+      if (hub) {
+        root.plugin = { ...hub.body.plugin };
+        root.circleRadius = hub.part.r;
+        wheels.splice(wheels.indexOf(hub.body), 1, root);
+      }
+    }
   const frames = objects.filter((o) => o.part.type !== "wheel");
   function joint(a, b, pointA, pointB, length = 0, s = 0.95) {
+    a = a.parent;
+    b = b.parent;
     const c = Constraint.create({
       bodyA: a,
       bodyB: b,
@@ -136,6 +171,13 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
   // Weld touching frame pieces at two nearby anchors, preserving independently built assemblies.
   for (let i = 0; i < frames.length; i++)
     for (let j = i + 1; j < frames.length; j++) {
+      if (
+        frames[i].part.assembly &&
+        frames[j].part.assembly &&
+        frames[i].part.assembly !== frames[j].part.assembly
+      )
+        continue;
+      if (frames[i].body.parent === frames[j].body.parent) continue;
       const a = frames[i].body,
         b = frames[j].body;
       const expanded = Bodies.rectangle(
@@ -160,20 +202,54 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
       }
     }
   for (const wheel of wheels) {
+    if (wheel.plugin.welded) continue;
+    const wheelPart = objects.find((o) => o.body === wheel).part;
     const nearest = frames
+      .filter(
+        (o) =>
+          !wheelPart.assembly ||
+          !o.part.assembly ||
+          o.part.assembly === wheelPart.assembly,
+      )
       .map((o) => ({
         body: o.body,
         d: Math.min(
-          ...o.body.vertices.map((v) =>
-            Vector.magnitude(Vector.sub(v, wheel.position)),
-          ),
+          ...o.body.vertices.map((v, i) => {
+            const next = o.body.vertices[(i + 1) % o.body.vertices.length];
+            const dx = next.x - v.x,
+              dy = next.y - v.y;
+            const t = Math.max(
+              0,
+              Math.min(
+                1,
+                ((wheel.position.x - v.x) * dx +
+                  (wheel.position.y - v.y) * dy) /
+                  (dx * dx + dy * dy),
+              ),
+            );
+            return Math.hypot(
+              wheel.position.x - v.x - dx * t,
+              wheel.position.y - v.y - dy * t,
+            );
+          }),
         ),
       }))
       .sort((a, b) => a.d - b.d)[0];
-    if (nearest && nearest.d < wheel.circleRadius + 65)
+    if (nearest && nearest.d < wheel.circleRadius + 65) {
       joint(nearest.body, wheel, wheel.position, wheel.position, 0, stiffness);
+      if (wheelPart.welded)
+        joint(
+          nearest.body,
+          wheel,
+          { x: wheel.position.x + 12, y: wheel.position.y },
+          { x: wheel.position.x + 12, y: wheel.position.y },
+          0,
+          1,
+        );
+    }
   }
-  for (const p of parts.filter((p) => p.type === "spring")) {
+  const actuators = [];
+  for (const p of parts.filter((p) => ["spring", "hinge"].includes(p.type))) {
     const near = (pt) =>
       objects
         .map((o) => ({
@@ -181,17 +257,36 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
           d: Vector.magnitude(Vector.sub(o.body.position, pt)),
         }))
         .sort((a, b) => a.d - b.d);
-    const a = near({ x: p.x, y: p.y })[0],
-      b = near({ x: p.x2, y: p.y2 }).find((o) => o.body !== a?.body);
-    if (a && b)
-      joint(
+    const a = p.a
+      ? objects.find((o) => o.part.id === p.a)
+      : near({ x: p.x, y: p.y })[0];
+    const b = p.b
+      ? objects.find((o) => o.part.id === p.b)
+      : near({ x: p.x2, y: p.y2 }).find((o) => o.body !== a?.body);
+    if (a && b) {
+      const c = joint(
         a.body,
         b.body,
         { x: p.x, y: p.y },
         { x: p.x2, y: p.y2 },
         Math.hypot(p.x2 - p.x, p.y2 - p.y),
-        stiffness * 0.12,
+        p.type === "hinge" ? 0.95 : stiffness * 0.12,
       );
+      c.plugin = { kind: p.type };
+      if (p.closeAfter !== undefined) {
+        const ref = (objects.find((o) => o.part.id === p.ref)?.body || a.body)
+          .parent;
+        actuators.push({
+          body: b.body.parent,
+          ref,
+          initialRef: ref.angle,
+          hinge: c,
+          latched: false,
+          delay: p.closeAfter,
+          target: p.closedAngle,
+        });
+      }
+    }
   }
   let loaded = false,
     elapsed = 0,
@@ -204,6 +299,7 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
     wheels,
     coconuts,
     joints,
+    actuators,
     get fuel() {
       return fuel;
     },
@@ -241,18 +337,56 @@ export function createSimulation(parts, stiffness = 0.6, course = {}) {
         );
       const motor = power * (boosting ? 1.9 : 1);
       if (loaded) elapsed += dt / 1000;
+      for (const a of actuators)
+        if (loaded && elapsed > a.delay && !a.latched) {
+          const target = a.target + a.ref.angle - a.initialRef;
+          const error = Math.atan2(
+            Math.sin(target - a.body.angle),
+            Math.cos(target - a.body.angle),
+          );
+          if (elapsed > a.delay + 1 && Math.abs(error) < 0.2) {
+            const pivot = Vector.add(a.hinge.bodyA.position, a.hinge.pointA);
+            const oldAnchor = a.hinge.pointB,
+              anchor = Vector.rotate(oldAnchor, target - a.body.angle);
+            Body.setAngle(a.body, target);
+            Body.setPosition(a.body, Vector.sub(pivot, anchor));
+            a.hinge.pointB = anchor;
+            a.hinge.angleB = a.body.angle;
+            const second = {
+              x: pivot.x + Math.cos(target) * 40,
+              y: pivot.y + Math.sin(target) * 40,
+            };
+            joint(a.hinge.bodyA, a.body, second, second, 0, 1);
+            a.latched = true;
+          }
+          Body.setAngularVelocity(
+            a.body,
+            a.ref.angularVelocity +
+              Math.max(-0.12, Math.min(0.12, error * 0.12)),
+          );
+        }
       for (const w of wheels) {
+        if (!w.plugin.powered) continue;
+        if (w.plugin.welded) {
+          const target = drive * motor * w.plugin.powerScale * 0.23;
+          Body.setAngularVelocity(
+            w,
+            w.angularVelocity + (target - w.angularVelocity) * 0.4,
+          );
+          continue;
+        }
         if (drive)
           Body.setAngularVelocity(
             w,
             w.angularVelocity +
-              (drive * motor * 0.23 - w.angularVelocity) * 0.08,
+              (drive * motor * w.plugin.powerScale * 0.23 - w.angularVelocity) *
+                0.08,
           );
         else Body.setAngularVelocity(w, w.angularVelocity * 0.97);
       }
       if (boosting)
         for (const { body } of objects)
-          Body.applyForce(body, body.position, {
+          Body.applyForce(body.parent, body.position, {
             x: drive * body.mass * 0.00018,
             y: 0,
           });

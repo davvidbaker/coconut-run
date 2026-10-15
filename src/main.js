@@ -1,3 +1,4 @@
+import { garage } from "./garage.js";
 import "./style.css";
 import Matter from "matter-js";
 import {
@@ -7,13 +8,14 @@ import {
   createSimulation,
   score,
 } from "./physics.js";
-import { courses, groundHeight, medal } from "./courses.js";
+import { courses, groundHeight, medal, COURSE_VERSION } from "./courses.js";
 import { Effects, drawStar } from "./effects.js";
 import { scenery } from "./scenery.js";
 let courseId = "lagoon",
   course = courses.lagoon,
   terrain = course.terrain,
   FINISH = course.finish;
+const recordKey = "coconut-run-records-v" + COURSE_VERSION;
 let autoDrive = false;
 let boostHeld = false,
   collected = new Set(),
@@ -25,7 +27,7 @@ let boostHeld = false,
   records = {};
 const effects = new Effects();
 try {
-  records = JSON.parse(localStorage.getItem("coconut-run-records")) || {};
+  records = JSON.parse(localStorage.getItem(recordKey)) || {};
 } catch {}
 function refreshRecords() {
   for (const id of Object.keys(courses)) {
@@ -49,7 +51,7 @@ function refreshRecords() {
 const $ = (id) => document.getElementById(id),
   canvas = $("game"),
   ctx = canvas.getContext("2d");
-let parts = preset(),
+let parts = preset("train"),
   tool = "beam",
   drag = null,
   hover = null,
@@ -82,6 +84,10 @@ function update() {
   $("undo").disabled = mode !== "build" || !history.length;
   $("clear").disabled = mode !== "build";
   $("preset").disabled = mode !== "build";
+  document.querySelectorAll("[data-design]").forEach((b) => {
+    b.disabled = mode !== "build";
+    b.classList.toggle("active", b.dataset.design === $("preset").value);
+  });
   $("stiffness").disabled = mode !== "build";
   document.querySelectorAll("[data-course]").forEach((b) => {
     b.disabled = mode !== "build";
@@ -163,7 +169,7 @@ canvas.addEventListener("pointerdown", (e) => {
   const p = point(e);
   if (tool === "erase") {
     const hit = parts.findLastIndex((part) =>
-      part.type === "spring"
+      ["spring", "hinge"].includes(part.type)
         ? Math.hypot(
             (part.x + part.x2) / 2 - p.x,
             (part.y + part.y2) / 2 - p.y,
@@ -205,6 +211,8 @@ const tips = {
     "Drag outward to size a wheel. Place it near the frame for an automatic axle.",
   spring: "Drag between two parts to add a flexible suspension link.",
   erase: "Click a part to remove it.",
+  hinge:
+    "Drag between separate parts to add a rigid link with free pivots at its ends.",
 };
 document.querySelectorAll("[data-tool]").forEach(
   (b) =>
@@ -228,8 +236,21 @@ $("clear").onclick = () => {
 $("preset").onchange = (e) => {
   remember();
   parts = preset(e.target.value);
+  const vehicle = garage[e.target.value];
+  $("garage-tag").textContent = vehicle?.tag || "THE ORIGINAL";
+  $("garage-description").textContent =
+    vehicle?.description || "A blank slate with good bones. Make it your own.";
+  notice(vehicle ? vehicle.name + ": " + vehicle.description : tips[tool]);
+  const source = $("garage-source");
+  source.hidden = !vehicle?.source;
+  if (vehicle?.source) source.href = vehicle.source;
   update();
 };
+for (const button of document.querySelectorAll("[data-design]"))
+  button.onclick = () => {
+    $("preset").value = button.dataset.design;
+    $("preset").onchange({ target: $("preset") });
+  };
 $("stiffness").oninput = (e) =>
   ($("spring-value").textContent =
     e.target.value < 4 ? "Soft" : e.target.value > 7 ? "Firm" : "Balanced");
@@ -416,7 +437,9 @@ $("restore").onclick = () => {
     if (
       !d.parts.every(
         (p) =>
-          ["beam", "box", "circle", "wheel", "spring"].includes(p.type) &&
+          ["beam", "box", "circle", "wheel", "spring", "hinge"].includes(
+            p.type,
+          ) &&
           (p.type === "wheel" || p.type === "circle"
             ? [p.x, p.y, p.r].every(Number.isFinite) && p.r >= 12 && p.r <= 120
             : [p.x, p.y, p.x2, p.y2].every(Number.isFinite)),
@@ -604,7 +627,7 @@ function draw() {
         Math.sin(performance.now() / 500) * 0.13,
       );
     }
-  for (const x of [1500, 3000]) {
+  for (let x = 1500; x < FINISH; x += 1500) {
     const y = groundHeight(terrain, x);
     line(
       [
@@ -679,16 +702,21 @@ function draw() {
           ? Matter.Vector.add(c.bodyA.position, c.pointA)
           : c.pointA,
         b = c.bodyB ? Matter.Vector.add(c.bodyB.position, c.pointB) : c.pointB;
-      if (c.length > 5) spring(a, b);
+      if (c.plugin?.kind === "hinge") {
+        line([a, b], "#da9051", 4);
+        circle(a.x, a.y, 5, "#fff0bb", "#bd7d43");
+        circle(b.x, b.y, 5, "#fff0bb", "#bd7d43");
+      } else if (c.length > 5) spring(a, b);
       else circle(a.x, a.y, 3, "#f1e7c8", "#758362");
     }
   } else {
     for (const p of parts)
-      if (p.type === "spring") spring({ x: p.x, y: p.y }, { x: p.x2, y: p.y2 });
+      if (["spring", "hinge"].includes(p.type))
+        spring({ x: p.x, y: p.y }, { x: p.x2, y: p.y2 });
       else renderBody(shape(p), p.type);
     if (drag && hover) {
       const p = makePart(drag, hover);
-      if (p.type === "spring") spring(drag, hover);
+      if (["spring", "hinge"].includes(p.type)) spring(drag, hover);
       else renderBody(shape(p), p.type, true);
     }
   }
@@ -711,7 +739,7 @@ function frame(now) {
       const input =
         mode === "drive"
           ? drive ||
-            ((autoDrive && sim.elapsed > 1.6) ||
+            ((autoDrive && sim.elapsed > (sim.actuators.length ? 3.2 : 1.6)) ||
             keys.has("arrowright") ||
             keys.has("d")
               ? 1
@@ -811,7 +839,7 @@ function frame(now) {
     if (mode === "drive") {
       if (
         sim.delivered === 15 ||
-        sim.elapsed > 120 ||
+        sim.elapsed > 240 ||
         sim.objects.every((o) => o.body.position.y > 900)
       )
         finish();
@@ -825,6 +853,10 @@ function frame(now) {
   draw();
   requestAnimationFrame(frame);
 }
+$("preset").value = "train";
+$("garage-tag").textContent = garage.train.tag;
+$("garage-description").textContent = garage.train.description;
+$("garage-source").href = garage.train.source;
 refreshRecords();
 update();
 requestAnimationFrame(frame);

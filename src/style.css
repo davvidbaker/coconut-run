@@ -1118,5 +1118,94 @@ footer > span:nth-child(2) {
   }
 }
 /* Fixed HUD columns keep changing speed/cargo digits from shifting controls. */
-.arcade-hud{display:grid;grid-template-columns:110px minmax(65px,1fr) 75px 155px}
-@media(max-width:1000px){.arcade-hud{grid-template-columns:85px minmax(60px,1fr) 55px 100px;gap:6px}}
+.arcade-hud {
+  display: grid;
+  grid-template-columns: 110px minmax(65px, 1fr) 75px 155px;
+}
+@media (max-width: 1000px) {
+  .arcade-hud {
+    grid-template-columns: 85px minmax(60px, 1fr) 55px 100px;
+    gap: 6px;
+  }
+}
+.garage-tag {
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #be7949;
+  margin-top: 11px;
+  font-weight: 700;
+}
+.garage-description {
+  font-size: 9px;
+  line-height: 1.6;
+  margin-top: 6px;
+  color: #708675;
+}
+@media (max-width: 700px) {
+  .garage-description {
+    font-size: 9px;
+  }
+  .presets {
+    width: 72%;
+  }
+}
+.contraption-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 16px;
+}
+.contraption-picker > span {
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: #78907f;
+  margin-right: 8px;
+}
+.contraption-picker button {
+  padding: 11px 15px;
+  background: #fff8e9;
+  border: 1px solid #d6d7c6;
+  border-radius: 6px;
+  font: 600 13px "Space Grotesk";
+  flex: 1;
+  text-align: left;
+}
+.contraption-picker button.active {
+  background: #214f4f;
+  color: #fff1c7;
+  border-color: #214f4f;
+}
+.contraption-picker small {
+  display: block;
+  font: 9px "DM Sans";
+  margin-top: 4px;
+  opacity: 0.7;
+}
+.garage-source {
+  display: block;
+  font-size: 8px;
+  color: #af754e;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.garage-source[hidden] {
+  display: none;
+}
+@media (max-width: 700px) {
+  .contraption-picker > span {
+    display: none;
+  }
+  .contraption-picker {
+    gap: 5px;
+  }
+  .contraption-picker button {
+    padding: 9px 6px;
+    font-size: 10px;
+  }
+  .contraption-picker small {
+    font-size: 7px;
+  }
+  #tools {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

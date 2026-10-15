@@ -67,6 +67,16 @@
             ><span class="course-medal" id="medal-orbit">☆</span>
           </button>
         </div>
+        <div class="contraption-picker" aria-label="Contraption starters">
+          <span>THE CONTRAPTION LAB</span
+          ><button data-design="train" class="active">
+            CocoTrain <small>3 articulated cars</small></button
+          ><button data-design="gimbal">
+            The Pendulum <small>Free pivot + twin latch</small></button
+          ><button data-design="hamster">
+            Coconut Hamster <small>Motor hatch + rolling cage</small>
+          </button>
+        </div>
         <section class="workshop">
           <aside>
             <div class="panel-title">YOUR TOOLKIT <span>↙</span></div>
@@ -83,6 +93,9 @@
               ><button data-tool="spring">
                 <span>⌁</span><b>Suspension</b
                 ><small>Connect & cushion</small></button
+              ><button data-tool="hinge">
+                <span>⊙</span><b>Pivot link</b
+                ><small>Let it articulate</small></button
               ><button data-tool="erase">
                 <span>⌫</span><b>Erase</b><small>Room for a better idea</small>
               </button>
@@ -110,11 +123,34 @@
             <div class="presets">
               <label>START WITH AN IDEA</label
               ><select id="preset" aria-label="Example vehicle">
-                <option value="cart">The trusty cart</option>
-                <option value="monster">The big wheeler</option>
-                <option value="long">The long hauler</option>
-                <option value="empty">A blank canvas</option>
+                <optgroup label="THE CONTRAPTION LAB">
+                  <option value="train" selected>
+                    CocoTrain · articulated convoy
+                  </option>
+                  <option value="gimbal">The Pendulum · swinging basket</option>
+                  <option value="hamster">
+                    Coconut Hamster · rolling cage
+                  </option>
+                </optgroup>
+                <optgroup label="THE CUSTOM GARAGE">
+                  <option value="sandfox">Sandfox GT · racing buggy</option>
+                  <option value="crawler">Centipede 6×6 · hauler</option>
+                  <option value="rover">Moon Mantis · giant rover</option>
+                  <option value="capsule">Coco Capsule · cargo pod</option>
+                </optgroup>
+                <optgroup label="THE ORIGINALS">
+                  <option value="cart">The trusty cart</option>
+                  <option value="monster">The big wheeler</option>
+                  <option value="long">The long hauler</option>
+                  <option value="empty">A blank canvas</option>
+                </optgroup>
               </select>
+              <a id="garage-source" class="garage-source" href="https://www.youtube.com/watch?v=cJZxR09xkgU" target="_blank" rel="noreferrer">Watch the original inspiration ↗</a>
+              <div id="garage-tag" class="garage-tag">THE ORIGINAL</div>
+              <p id="garage-description" class="garage-description">
+                A blank slate with good bones. Pick a custom build above, then
+                make it your own.
+              </p>
             </div>
             <div class="edit-actions">
               <button id="undo">↶ Undo</button

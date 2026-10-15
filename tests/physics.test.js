@@ -58,11 +58,11 @@ test("boost consumes fuel, stops on an empty tank and recharges off throttle", (
   assert.ok(s.fuel > low + 0.09);
   s.dispose();
 });
-test("all three arcade courses can be completed with the starter cart", () => {
+test("long courses remain completable with the protective cargo capsule", () => {
   for (const course of Object.values(courses)) {
-    const s = createSimulation(preset(), 0.6, course);
+    const s = createSimulation(preset("capsule"), 0.6, course);
     s.load();
-    for (let i = 0; i < 120 * 45 && s.delivered < 15; i++)
+    for (let i = 0; i < 120 * 160 && s.delivered < 15; i++)
       s.step(1000 / 120, i > 240 ? 1 : 0, 1);
     assert.equal(s.delivered, 15, course.name);
     s.dispose();
@@ -78,4 +78,51 @@ test("gold requires a perfect fast delivery, other medals reward retained cargo"
   assert.equal(medal(15, 25, 18), "silver");
   assert.equal(medal(8, 17, 18), "bronze");
   assert.equal(medal(2, 17, 18), "try again");
+});
+
+test("custom garage builds have distinct connected wheel layouts and deliver cargo on the original course", () => {
+  for (const [name, wheels] of [
+    ["sandfox", 2],
+    ["crawler", 6],
+    ["rover", 2],
+    ["capsule", 4],
+  ]) {
+    const s = createSimulation(preset(name));
+    assert.equal(s.wheels.length, wheels);
+    s.load();
+    for (let i = 0; i < 120 * 40 && s.delivered < 15; i++)
+      s.step(1000 / 120, i > 240 ? 1 : 0, 1);
+    assert.equal(s.delivered, 15, name);
+    s.dispose();
+  }
+});
+test("endurance courses exceed the original length and have distinct obstacles", () => {
+  assert.ok(courses.lagoon.finish > 14000);
+  assert.ok(courses.dunes.finish > 19000);
+  assert.ok(courses.orbit.finish > 22000);
+  assert.ok(
+    courses.dunes.terrain.some((p, i, a) => i && p[0] - a[i - 1][0] === 1),
+  );
+});
+
+test("video-inspired starters preserve independent articulation and deliver their cargo", () => {
+  for (const id of ["train", "gimbal", "hamster"]) {
+    const s = createSimulation(preset(id));
+    const hinges = s.joints.filter((j) => j.plugin?.kind === "hinge");
+    assert.ok(hinges.length > 0, id);
+    assert.ok(
+      hinges.every((j) => j.bodyA !== j.bodyB),
+      id,
+    );
+    s.load();
+    for (let i = 0; i < 120 * 65 && s.delivered < 15; i++)
+      s.step(1000 / 120, i > 384 ? 1 : 0, 1);
+    assert.equal(s.delivered, 15, id);
+    if (s.actuators.length)
+      assert.ok(
+        s.actuators.every((a) => a.latched),
+        id,
+      );
+    s.dispose();
+  }
 });

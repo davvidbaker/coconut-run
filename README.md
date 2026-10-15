@@ -29,3 +29,15 @@ Three selectable courses: Lagoon Express, Dune Rally, and Coconut Orbit (48% gra
 **Quick ride** loads and drives your current design automatically after letting the cargo settle. Arrow keys take over immediately. **T** retries and **R** returns to the workshop. Sound is opt-in; reduced-motion preferences reduce particle effects.
 
 Original campaign credits: game developer Jason K. Smith; digital production Colossal Squid Industries; agency Fallon; client Johnson Controls. This is an independent homage, not an official Johnson Controls game.
+
+## Contraption Lab
+
+Video research changed the starter-design direction from conventional vehicles to moving mechanisms:
+
+- **CocoTrain**: three independent rigid cars, passive trailer wheels, driven locomotive wheels and two freely pivoting tow links. Inspired by tony shawcross's [CocoTrain](https://www.youtube.com/watch?v=cJZxR09xkgU).
+- **The Pendulum**: a gantry carries a freely swinging cargo basket. Two motor-driven lids close, then latch, before auto-drive begins. An original mechanism experiment for this homage.
+- **Coconut Hamster**: an open rolling frame accepts cargo through a hatch; a motor closes the hatch and a latch locks it before the complete cage rolls. Inspired by SAElectricI's [zero-wheel challenge](https://www.youtube.com/watch?v=TsUPFJD62-Q).
+
+These are interpretations of the original community's ideas, not recovered original vehicle files. Named assemblies use Matter.js compound bodies so their geometry remains rigid, while explicit pivot links allow motion between assemblies. The Pivot link editor tool can connect separate parts. Auto-drive gives loading hatches time to close; manual drivers can start early at their own risk.
+
+The endurance routes now span about three to five times the original recreation's distance, with varied climbing, washboard and step-up sections. Records use a new course-version namespace so old short-course times are not compared with the longer routes.
