@@ -1,5 +1,7 @@
 # Coconut Run — The Workshop
 
+[Play on GitHub Pages](https://davvidbaker.github.io/coconut-run/)
+
 An independent recreation of the Johnson Controls Flash physics game, using modern JavaScript modules, Vite, Canvas 2D, and Matter.js. All artwork is drawn in code.
 
 ## Run
@@ -41,3 +43,7 @@ Video research changed the starter-design direction from conventional vehicles t
 These are interpretations of the original community's ideas, not recovered original vehicle files. Named assemblies use Matter.js compound bodies so their geometry remains rigid, while explicit pivot links allow motion between assemblies. The Pivot link editor tool can connect separate parts. Auto-drive gives loading hatches time to close; manual drivers can start early at their own risk.
 
 The endurance routes now span about three to five times the original recreation's distance, with varied climbing, washboard and step-up sections. Records use a new course-version namespace so old short-course times are not compared with the longer routes.
+
+## GitHub Pages deployment
+
+Pushes to `main` run the physics tests, build with `PAGES_BASE=/coconut-run/`, and deploy `dist/` through the Pages workflow. Local development and the existing Sites deployment keep the root base path.
