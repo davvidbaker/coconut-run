@@ -1,0 +1,612 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+:root {
+  font-family: "DM Sans", sans-serif;
+  color: #243c32;
+  background: #f6f5ef;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+select,
+input {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  color: inherit;
+  border: 0;
+  background: none;
+}
+button:focus-visible,
+select:focus-visible,
+canvas:focus-visible {
+  outline: 3px solid #ee8752;
+  outline-offset: 3px;
+}
+header {
+  height: 86px;
+  border-bottom: 1px solid #d9ddd2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4vw;
+}
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+  color: #254d3a;
+  font:
+    700 24px "Space Grotesk",
+    sans-serif;
+}
+.brand > span {
+  font-size: 18px;
+  letter-spacing: -0.7px;
+}
+.light {
+  font-weight: 400;
+}
+.edition {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #778176;
+}
+.edition i {
+  padding: 0 16px;
+  color: #adb4a5;
+}
+header button {
+  font-size: 12px;
+}
+main {
+  max-width: 1600px;
+  margin: auto;
+  padding: 35px 4vw 0;
+}
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: #718471;
+}
+h1 {
+  font:
+    500 clamp(28px, 3vw, 46px) "Space Grotesk",
+    sans-serif;
+  letter-spacing: -2px;
+  margin: 12px 0;
+}
+em {
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+h1 em {
+  color: #578264;
+}
+p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #7a8276;
+  margin: 0;
+}
+.steps {
+  display: flex;
+  gap: 26px;
+  font:
+    12px "Space Grotesk",
+    sans-serif;
+  color: #a4aa9e;
+}
+.steps span {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 2px solid transparent;
+}
+.steps b {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.steps .current {
+  color: #285e40;
+  border-color: #285e40;
+}
+.workshop {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 205px;
+  min-height: 550px;
+  border: 1px solid #d5dbce;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafaf5;
+}
+.workshop > aside {
+  padding: 22px 18px;
+}
+.workshop > aside:first-child {
+  border-right: 1px solid #d5dbce;
+}
+.panel-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.panel-title span {
+  font-size: 17px;
+  color: #799379;
+}
+#tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+#tools button {
+  border: 1px solid #d9dfd2;
+  border-radius: 5px;
+  padding: 9px 3px;
+  text-align: center;
+  min-height: 80px;
+}
+#tools button.selected {
+  background: #e6ecdf;
+  border-color: #65866a;
+  color: #2d583c;
+}
+#tools button > span {
+  display: block;
+  font: 30px Georgia;
+  line-height: 28px;
+  margin-bottom: 6px;
+}
+#tools b {
+  display: block;
+  font-size: 10px;
+}
+#tools small {
+  display: none;
+}
+.tuning {
+  border-top: 1px solid #dbe0d5;
+  margin-top: 20px;
+  padding-top: 16px;
+}
+.tuning label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  margin-bottom: 8px;
+}
+.tuning output {
+  color: #83907e;
+}
+input[type="range"] {
+  width: 100%;
+  height: 3px;
+  accent-color: #396a48;
+  margin: 0 0 19px;
+}
+.presets label {
+  font-size: 8px;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 9px;
+}
+select {
+  font-size: 10px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid #d4dbcd;
+  border-radius: 3px;
+  padding: 8px 4px;
+  color: #466447;
+}
+.edit-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 10px;
+}
+.stage {
+  position: relative;
+  background: #edf0e6;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.stage-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.stage-bar i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #5b8860;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+#part-count {
+  color: #7e8d77;
+}
+canvas {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 340px;
+  touch-action: none;
+  object-fit: contain;
+}
+#notice {
+  font-size: 10px;
+  text-align: center;
+  color: #788570;
+  padding: 14px 12px;
+  min-height: 42px;
+}
+.stage-bottom {
+  padding: 14px 17px;
+  border-top: 1px solid #d5dbce;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #819078;
+  gap: 8px;
+}
+.key {
+  border: 1px solid #bdc8b4;
+  border-radius: 3px;
+  padding: 2px 5px;
+  margin-right: 3px;
+  color: #456341;
+}
+.stage-bottom button {
+  font-size: 9px;
+  padding: 3px 5px;
+}
+.run-panel {
+  border-left: 1px solid #d5dbce;
+  background: #f0f1e7;
+}
+.run-panel h2 {
+  font: 500 29px/1.15 "Space Grotesk";
+  letter-spacing: -1px;
+  margin: 30px 0 12px;
+}
+.run-panel h2 em {
+  color: #618261;
+}
+.run-panel p {
+  font-size: 10px;
+}
+.stat {
+  border-bottom: 1px solid #d4dccd;
+  padding: 23px 0 12px;
+}
+.stat label,
+.route label {
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  color: #788570;
+}
+.stat > div {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-top: 6px;
+}
+.stat strong {
+  font: 400 34px "Space Grotesk";
+  letter-spacing: -1px;
+}
+.stat span {
+  font-size: 10px;
+  color: #83917a;
+}
+.route {
+  margin: 20px 0 25px;
+}
+.route > div {
+  height: 4px;
+  background: #d6dfcc;
+  margin: 12px 0 8px;
+}
+.route i {
+  display: block;
+  height: 100%;
+  background: #537c50;
+  width: 0;
+}
+.route > span {
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #7c8b73;
+  display: flex;
+  justify-content: space-between;
+}
+.primary {
+  background: #295a3c;
+  color: #fff;
+  border-radius: 4px;
+  padding: 13px;
+  font-size: 11px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.primary:hover {
+  background: #387249;
+}
+#edit,
+#pause {
+  font-size: 10px;
+  margin-top: 12px;
+  padding: 4px;
+}
+.tip {
+  margin-top: 24px !important;
+  font-size: 8px !important;
+  letter-spacing: 1px;
+}
+.tip span {
+  display: block;
+  letter-spacing: 0;
+  margin-top: 7px;
+  line-height: 1.7;
+}
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  gap: 20px;
+  font-size: 8px;
+  color: #909886;
+}
+footer > span:first-child {
+  letter-spacing: 1.5px;
+  color: #597351;
+}
+footer a {
+  color: inherit;
+}
+footer button {
+  font-size: 9px;
+  white-space: nowrap;
+}
+dialog {
+  border: 1px solid #cad4c0;
+  border-radius: 10px;
+  max-width: 480px;
+  background: #f8f8f0;
+  color: #264a35;
+  padding: 35px;
+}
+dialog::backdrop {
+  background: #19382799;
+}
+dialog h2 {
+  font: 30px "Space Grotesk";
+  letter-spacing: -1px;
+}
+dialog p {
+  margin: 15px 0;
+}
+#close-help {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+}
+#result {
+  position: absolute;
+  inset: 0;
+  background: #e8eedde8;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+#result[hidden] {
+  display: none;
+}
+.result-card h2 {
+  font: 38px "Space Grotesk";
+  margin: 15px;
+}
+.result-card p {
+  font-size: 15px;
+}
+.result-card button {
+  margin-top: 25px;
+  background: #295a3c;
+  color: white;
+  padding: 14px;
+  border-radius: 4px;
+}
+.touch-controls {
+  display: none;
+}
+button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+@media (min-width: 1450px) {
+  .workshop {
+    grid-template-columns: 200px minmax(0, 1fr) 230px;
+  }
+}
+@media (max-width: 1000px) {
+  main {
+    padding: 25px 2vw 0;
+  }
+  .workshop {
+    grid-template-columns: 140px minmax(0, 1fr) 160px;
+  }
+  .workshop > aside {
+    padding: 18px 12px;
+  }
+  .steps {
+    gap: 12px;
+  }
+  .run-panel h2 {
+    font-size: 25px;
+  }
+  .stage-bottom {
+    flex-wrap: wrap;
+  }
+  .edition {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  header {
+    height: 60px;
+  }
+  .intro {
+    display: block;
+  }
+  h1 {
+    letter-spacing: -1px;
+  }
+  .steps {
+    margin-top: 15px;
+  }
+  .workshop {
+    grid-template-columns: 1fr;
+  }
+  .workshop > aside:first-child {
+    border-right: 0;
+    order: 1;
+  }
+  #tools {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  #tools button {
+    min-height: 64px;
+    padding: 5px 2px;
+  }
+  #tools b {
+    font-size: 8px;
+  }
+  .tuning {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .tuning input {
+    width: 70px;
+    margin: 0;
+  }
+  .tuning label {
+    margin: 0;
+  }
+  .tuning output {
+    display: none;
+  }
+  .presets {
+    display: inline-block;
+    width: 60%;
+    margin-top: 12px;
+  }
+  .edit-actions {
+    float: right;
+    gap: 10px;
+  }
+  .panel-title {
+    margin-bottom: 10px;
+  }
+  .stage {
+    order: 0;
+  }
+  canvas {
+    min-height: 280px;
+  }
+  .run-panel {
+    order: 2;
+    border-left: 0;
+    border-top: 1px solid #d5dbce;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+  }
+  .run-panel > .panel-title,
+  .run-panel > h2,
+  .run-panel > p,
+  .route {
+    display: none;
+  }
+  .stat {
+    padding: 4px;
+    border: 0;
+    flex: 1;
+  }
+  .stat strong {
+    font-size: 25px;
+  }
+  .run-panel .primary {
+    width: auto;
+    flex: 1;
+    gap: 10px;
+  }
+  .stage-bottom {
+    padding-bottom: 50px;
+  }
+  .touch-controls {
+    display: flex;
+    position: fixed;
+    bottom: 15px;
+    right: 20px;
+    gap: 15px;
+    z-index: 3;
+  }
+  .touch-controls button {
+    background: #315e40e8;
+    color: #fff;
+    width: 55px;
+    height: 45px;
+    border-radius: 8px;
+    touch-action: none;
+  }
+  footer {
+    align-items: flex-start;
+  }
+  footer > span:first-child {
+    display: none;
+  }
+}
+
+/* Keep pointer coordinates aligned with the drawing at every viewport size. */
+canvas {
+  aspect-ratio: 1000 / 580;
+  height: auto;
+  flex: none;
+  min-height: 0;
+}
+@media (max-width: 700px) {
+  canvas {
+    min-height: 0;
+  }
+}

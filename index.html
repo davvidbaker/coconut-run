@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Draw a cart. Save your coconuts. A modern physics workshop inspired by the classic Coconut Run."
+    />
+    <title>Coconut Run — The Workshop</title>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <a class="brand" href="/"
+          >◒ <span>COCONUT<span class="light"> RUN</span></span></a
+        ><span class="edition">THE WORKSHOP <i> / </i> EST. 2008 · REBUILT</span
+        ><button id="help">How to play ↗</button>
+      </header>
+      <main>
+        <div class="intro">
+          <div>
+            <div class="eyebrow">A LITTLE INGENUITY GOES A LONG WAY</div>
+            <h1>Big ideas. <em>Precious cargo.</em></h1>
+            <p>
+              Build something brilliant. Get all 15 coconuts to the other side.
+            </p>
+          </div>
+          <div class="steps">
+            <span id="step1" class="current">01 <b>BUILD</b></span
+            ><span id="step2">02 <b>LOAD</b></span
+            ><span id="step3">03 <b>DRIVE</b></span>
+          </div>
+        </div>
+        <section class="workshop">
+          <aside>
+            <div class="panel-title">YOUR TOOLKIT <span>↙</span></div>
+            <div id="tools">
+              <button data-tool="beam" class="selected">
+                <span>╱</span><b>Beam</b><small>Draw a frame</small></button
+              ><button data-tool="box">
+                <span>□</span><b>Block</b><small>Make a body</small></button
+              ><button data-tool="circle">
+                <span>○</span><b>Disc</b><small>Add a round body</small></button
+              ><button data-tool="wheel">
+                <span>⊕</span><b>Wheel</b
+                ><small>Give it some drive</small></button
+              ><button data-tool="spring">
+                <span>⌁</span><b>Suspension</b
+                ><small>Connect & cushion</small></button
+              ><button data-tool="erase">
+                <span>⌫</span><b>Erase</b><small>Room for a better idea</small>
+              </button>
+            </div>
+            <div class="tuning">
+              <label
+                >Suspension <output id="spring-value">Balanced</output></label
+              ><input
+                id="stiffness"
+                aria-label="Suspension stiffness"
+                type="range"
+                min="1"
+                max="10"
+                value="6"
+              /><label>Motor power <output id="power-value">60%</output></label
+              ><input
+                id="power"
+                aria-label="Motor power"
+                type="range"
+                min="20"
+                max="100"
+                value="60"
+              />
+            </div>
+            <div class="presets">
+              <label>START WITH AN IDEA</label
+              ><select id="preset" aria-label="Example vehicle">
+                <option value="cart">The trusty cart</option>
+                <option value="monster">The big wheeler</option>
+                <option value="long">The long hauler</option>
+                <option value="empty">A blank canvas</option>
+              </select>
+            </div>
+            <div class="edit-actions">
+              <button id="undo">↶ Undo</button
+              ><button id="clear">Clear all</button>
+            </div>
+          </aside>
+          <div class="stage">
+            <div class="stage-bar">
+              <span><i></i> <b id="stage-label">DESIGN MODE</b></span
+              ><span id="part-count">7 PARTS</span>
+            </div>
+            <canvas
+              id="game"
+              width="1000"
+              height="580"
+              tabindex="0"
+              aria-label="Vehicle workshop: drag to draw parts, then load coconuts and drive with arrow keys"
+            ></canvas>
+            <div id="notice" role="status">
+              Drag to draw a beam. Touching frame pieces join automatically.
+            </div>
+            <div class="stage-bottom">
+              <div>
+                <span class="key">←</span><span class="key">→</span>
+                <span id="control-hint">Drive when you're ready</span>
+              </div>
+              <div>
+                <button id="save">Save design</button
+                ><button id="restore">Restore</button>
+              </div>
+            </div>
+            <div id="result" hidden>
+              <div class="result-card">
+                <div class="eyebrow">RUN COMPLETE</div>
+                <h2 id="result-title">Nice delivery.</h2>
+                <p id="result-stats"></p>
+                <button id="result-edit">Back to the workshop ↗</button>
+              </div>
+            </div>
+          </div>
+          <aside class="run-panel">
+            <div class="panel-title">THE MISSION <span>↗</span></div>
+            <h2>Keep your<br /><em>coconuts.</em></h2>
+            <p>A bumpy road. A full cart.<br />One very good idea.</p>
+            <div class="stat">
+              <label>COCONUTS DELIVERED</label>
+              <div><strong id="cargo">00</strong><span>/ 15</span></div>
+            </div>
+            <div class="stat">
+              <label>RUN TIME</label>
+              <div><strong id="timer">00:00</strong><span>SEC</span></div>
+            </div>
+            <div class="route">
+              <label>ROUTE PROGRESS</label>
+              <div><i id="progress"></i></div>
+              <span>WORKSHOP <b>SHREDDER</b></span>
+            </div>
+            <button class="primary" id="start">
+              Test your design <span>→</span></button
+            ><button id="edit" hidden>↶ Back to build</button
+            ><button id="pause" hidden>Pause</button>
+            <p class="tip" id="tip">
+              PRO TIP<br /><span
+                >A wide wheelbase and a deep basket make a surprisingly good
+                team.</span
+              >
+            </p>
+          </aside>
+        </section>
+        <footer>
+          <span>DRAW. TINKER. TRY AGAIN.</span
+          ><span
+            >An independent recreation inspired by Johnson Controls’ Coconut
+            Run.
+            <a
+              href="https://colordodge.com/coconut-run"
+              target="_blank"
+              rel="noreferrer"
+              >Original by Jason K. Smith ↗</a
+            ></span
+          ><button id="sound" aria-pressed="false">Sound off ♫</button>
+        </footer>
+      </main>
+      <dialog id="instructions">
+        <button id="close-help" aria-label="Close instructions">✕</button>
+        <div class="eyebrow">WELCOME TO THE WORKSHOP</div>
+        <h2>A good idea on wheels.</h2>
+        <p>
+          <b>1. Build.</b> Drag beams and blocks to make a basket. Touching
+          frame pieces join. Draw wheels by dragging outward from their centers;
+          wheels overlapping a frame get an axle automatically.
+        </p>
+        <p>
+          <b>2. Connect.</b> Drag suspension between two parts for a flexible
+          connection. Use larger wheels to climb obstacles. Undo or erase
+          anything.
+        </p>
+        <p>
+          <b>3. Load & drive.</b> Test your design, release 15 coconuts, then
+          hold → or D to drive and ← or A to reverse. On touchscreens, hold the
+          on-screen arrows.
+        </p>
+        <p>
+          Deliver coconuts into the shredder at the finish. Your score rewards
+          cargo and speed. Return to the workshop anytime to improve your
+          design.
+        </p>
+        <button id="got-it" class="primary">Let's build →</button>
+      </dialog>
+      <div class="touch-controls">
+        <button id="left" aria-label="Drive left">←</button
+        ><button id="right" aria-label="Drive right">→</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
